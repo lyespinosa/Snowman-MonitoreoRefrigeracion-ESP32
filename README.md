@@ -3,7 +3,7 @@ Sistema de monitoreo de contenedores de refrigeración de la empresa Snowman
 
 Obtiene la temperatura de y humedad del contenedor y la muestra en una vista web local, asi mismo almacena dicha informacion en una base en Firebase
 
-### LIBREIRAS NECESARIAS
+### LIBRERIAS
 
 Librerías necesarías en el Arduino IDE con ESP32
 
