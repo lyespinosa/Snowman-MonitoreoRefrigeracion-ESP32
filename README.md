@@ -1,7 +1,7 @@
 # Snowman-MonitoreoRefrigeracion-ESP32
 Sistema de monitoreo de contenedores de refrigeración de la empresa Snowman
 
-Obtiene la temperatura de y humedad del contenedor y la muestra en una vista web local, asi mismo almacena dicha informacion en una base en Firebase
+Obtiene la temperatura y humedad del contenedor y la muestra en una página web local, asimismo almacena dicha informacion en una base en Firebase
 
 ### LIBRERIAS
 
