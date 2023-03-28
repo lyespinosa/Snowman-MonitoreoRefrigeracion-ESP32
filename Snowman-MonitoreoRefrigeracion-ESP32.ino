@@ -5,19 +5,24 @@
 #include <ESPmDNS.h>
 #include <DHT.h>
 
+#include <Wire.h>
+#include <Adafruit_BMP085.h>
+
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 
 #define FIREBASE_AUTH "https://esp32-dht11-snowman-default-rtdb.firebaseio.com/"
 #define FIREBASE_HOST "0dadqkpNnn8fS1m21slJmzDcqO8jQUAnWGbky8Co"
 
-const char *ssid = "****";
-const char *password = "*****";
+const char *ssid = "motorola";
+const char *password = "9043904349";
 
 const char* timezone = "CST6CDT,M3.2.0/2,M11.1.0/2"; 
 
 WebServer server(80);
-DHT dht(26, DHT11);
+DHT dht(5, DHT11);
+
+Adafruit_BMP085 bmp;
 
 void handleRoot() {
   char msg[1500];
@@ -55,11 +60,17 @@ void handleRoot() {
         <span>%.2f</span>\
         <sup class='units'>&percnt;</sup>\
       </p>\
+      <p>\
+        <i class='fas fa-tint' style='color:#00add6;'></i>\
+        <span class='dht-labels'>mm. de mercurio</span>\
+        <span>%.6f mmHg</span>\
+        <sup class='units'>&percnt;</sup>\
+      </p>\
       </div>\
       </div>\
   </body>\
 </html>",
-           readDHTTemperature(), readDHTHumidity()
+           readDHTTemperature(), readDHTHumidity(), readBMPPressureHg()
           );
   server.send(200, "text/html", msg);
 }
@@ -89,6 +100,12 @@ void setup(void) {
 
   configTime(-6 * 3600, 0, "pool.ntp.org");
 
+  dht.begin();
+  if (!bmp.begin()) {
+    Serial.println("BMP180 no detected");
+    while (1) {}    
+  }
+
   if (MDNS.begin("esp32")) {
     Serial.println("MDNS responder started");
   }
@@ -103,6 +120,7 @@ void loop(void) {
   time_t now = time(nullptr);
 
   String estado = "", mensaje = ""; 
+
 
   char dateTimeString[20];
   strftime(dateTimeString, 20, "%Y-%m-%d %H:%M:%S", localtime(&now));
@@ -129,7 +147,7 @@ void loop(void) {
    estado = "Correcto";
   }
 
-  String jsonData = "{ \"Data\": { \"Fecha\": \"" + String(dateTimeString) + "\", \"Temperatura\": " + String(readDHTTemperature()) + "\", \"Humedad\": " + String(readDHTHumidity()) + "\", \"Estado\": " + estadoDHT() + "\", \"Mensaje\": " + mensajeDHT() + " } }";
+  String jsonData = "{ \"Data\": { \"Fecha\": \"" + String(dateTimeString) + "\", \"Temperatura\": " + String(readDHTTemperature()) + "\", \"Humedad\": " + String(readDHTHumidity()) + "\", \"Presión atmosferica\": " + String(readBMPPressure()) + "\", \"Estado\": " + estadoDHT() + "\", \"Mensaje\": " + mensajeDHT() + " } }";
 
   Firebase.pushString("Data:", jsonData);
 
@@ -172,11 +190,35 @@ float readDHTHumidity() {
   }
 }
 
+float readBMPPressure() {
+
+  float p = bmp.readPressure() * 0.000009869;
+  if (isnan(p)) {
+    Serial.println("Failed to read Pressure");
+    return -1;
+  }
+  else{
+    return p;
+  }
+}
+
+float readBMPPressureHg() {
+
+  float p = bmp.readPressure() * 0.0075;
+  if (isnan(p)) {
+    Serial.println("Failed to read Pressure");
+    return -1;
+  }
+  else{
+    return p;
+  }
+}
+
 String estadoDHT(){
-  if(readDHTTemperature() >= 50){ 
+  if(readDHTTemperature() >= 35){ 
     return "Erroneo";
   }
-  else if(readDHTHumidity() <= 25){
+  else if(readDHTHumidity() <= 30){
     return "Erroneo";
   }
   else{
@@ -187,10 +229,10 @@ String estadoDHT(){
 
 
 String mensajeDHT(){
-  if(readDHTTemperature() >= 50){ 
+  if(readDHTTemperature() >= 35){ 
     return "¡Alert! temperatura del congelador muy alta";
   }
-  else if(readDHTHumidity() <= 25){
+  else if(readDHTHumidity() <= 30){
     return "¡Alert! la humedad del congelador es muy baja";
   }
   else{
