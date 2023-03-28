@@ -13,7 +13,7 @@ Librerías necesarías en el Arduino IDE con ESP32
 
 ### DIAGRAMA 
 
-![]()
+![](https://github.com/lyespinosa/Snowman-MonitoreoRefrigeracion-ESP32/blob/main/diagram-esp32.png)
 
 
 ### VISTA PREVIA DEL CÓDIGO
